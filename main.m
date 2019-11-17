@@ -5,7 +5,7 @@
 % Please find the full article:
 % Implementation of interior-point methods for LP based on 
 % Krylov subspace iterative solvers with inner-iteration preconditioning
-% Cui, Y., Morikuni, K., Tsuchiya, T. et al. 
+% Cui, Y., Morikuni, K., Tsuchiya, T., Hayami, K.
 % Comput Optim Appl (2019) 74: 143. 
 % <https://doi.org/10.1007/s10589-019-00103-y>
 
