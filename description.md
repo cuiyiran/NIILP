@@ -1,7 +1,7 @@
 # Linear Program Solver by Y. Cui, K. Morikuni, T. Tsuchiya and K. Hayami.
 First version: Aug 2015 \
 Latest update: Nov 2019 \
-This project is licensed under the terms of the GNU license. \
+This project is licensed under the terms of the GNU license.
 
 Please find the full article: \
 Implementation of interior-point methods for LP based on 
