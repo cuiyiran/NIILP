@@ -1,0 +1,1160 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Linear Program Solver by Y. Cui, K. Morikuni, T. Tsuchiya and K. Hayami.</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-11-17"><meta name="DC.source" content="NIILP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Linear Program Solver by Y. Cui, K. Morikuni, T. Tsuchiya and K. Hayami.</h1><!--introduction--><p>First version: Aug 2015 <br> Latest update: Nov 2019 <br><br> Please find the full article: <br> Implementation of interior-point methods for LP based on Krylov subspace iterative solvers with inner-iteration preconditioning <br> Cui, Y., Morikuni, K., Tsuchiya, T. et al. <br> Comput Optim Appl (2019) 74: 143. <br> <a href="https://doi.org/10.1007/s10589-019-00103-y"> https://doi.org/10.1007/s10589-019-00103-y</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">main function: linear program interior point solver</a></li><li><a href="#2">load and preprocess problem</a></li><li><a href="#3">choose an initial guess</a></li><li><a href="#4">calculate feasibility</a></li><li><a href="#5">calculate direction to move</a></li><li><a href="#6">choose centering parameter</a></li><li><a href="#7">choose a step length</a></li><li><a href="#8">update the iterate</a></li><li><a href="#9">helper function: reciprocal with cap</a></li></ul></div><h2 id="1">main function: linear program interior point solver</h2><pre class="codeinput"><span class="keyword">function</span>[x, z, info, trerrorHist] = NIILP(probname, solvername, tolmid, toladj, tol_lp, maxiter)
+<span class="comment">% The main function to solve linear programs.</span>
+
+<span class="comment">% Args:</span>
+    <span class="comment">% probname (string): the filename of the problem, e.g. 'lp_agg.mat'</span>
+    <span class="comment">% tolmid (double): a tolerance level for the linear solver for the step equations</span>
+    <span class="comment">% solvername (string): to specify linear solver, e.g. 'ABGMRES_scale'</span>
+    <span class="comment">% toladj (bool): set to True to adjust the tolmid according to the progress</span>
+    <span class="comment">% tol_lp (double): a tolerance level for the linear program solver</span>
+    <span class="comment">% maxiter (int): max iteration number for the linear program solver</span>
+
+<span class="comment">% Returns:</span>
+    <span class="comment">% x (array of doubles): the primal solution</span>
+    <span class="comment">% s (array of doubles): the dual solution</span>
+    <span class="comment">% info (array): more information of this run, including:</span>
+    <span class="comment">%     converged (double): 0 or 1 to indicate whether the linear program solver converged</span>
+    <span class="comment">%     iter (double): number of iterations used for convergence</span>
+    <span class="comment">%     avg1 (double): average number of iterations for the linear solver to solve the</span>
+    <span class="comment">%           predictor step equations</span>
+    <span class="comment">%     avg2 (double): average number of iterations for the linear solver to solve the</span>
+    <span class="comment">%           corrector step equations</span>
+    <span class="comment">% trerrorHist (array of doubles) the error at each interior-point step</span>
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% set up global variables</span>
+<span class="comment">% ------------------------------------------</span>
+fprintf(<span class="string">'\n&lt;&lt;&lt;&lt;&lt; NIILP solver: %s for problem %s &gt;&gt;&gt;&gt;&gt;\n'</span>, solvername, strtok(probname,<span class="string">'.'</span>));
+<span class="keyword">global</span> x s y z w n m ub e Gt
+<span class="keyword">global</span> nub nt phi0 tau0 bnrm cnrm unrm
+<span class="keyword">global</span> Lbounds_non0 Ubounds_exist
+<span class="keyword">global</span> fixed_value_idx fixed_value
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% setup interior-point parameters</span>
+<span class="comment">% ------------------------------------------</span>
+tolmid_start = tolmid;
+tau0 = .9995;       <span class="comment">% step percentage to boundary</span>
+phi0 = 1.e-5;       <span class="comment">% initial centrality factor</span>
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% load data &amp; preprocess</span>
+<span class="comment">% ------------------------------------------</span>
+[A, b, c, lb, ub] = prep(probname);
+nt = n + nub;
+e = ones(n,1);
+
+<span class="comment">% =============='''' tick ''''==============</span>
+t1 = cputime;
+
+<span class="comment">% initial point -----</span>
+bnrm =sqrt(b'*b);
+cnrm = sqrt(c'*c);
+unrm = [];
+[x,y,z,s,w,Gt] = initp(A,b,c,ub,bnrm,cnrm); <span class="comment">% Gt := A'y</span>
+
+<span class="keyword">if</span> any(fixed_value_idx)
+    fixed_value_idx(:);
+    fixed_value(:);
+<span class="keyword">end</span>
+
+
+<span class="keyword">if</span> (Ubounds_exist) unrm = norm(ub); <span class="keyword">end</span>
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% compute the complementary quantities</span>
+<span class="comment">% ------------------------------------------</span>
+Rxz = x.*z; Rsw = [];
+<span class="keyword">if</span> (Ubounds_exist) Rsw = s.*w; <span class="keyword">end</span>
+dgap = full(sum([Rxz; Rsw]));
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% compute the feasibility measurements</span>
+<span class="comment">% ------------------------------------------</span>
+[Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A,b,c,dgap);
+trerror = max([rrb rrc rru rdgap]);
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% create empty variables to track progress</span>
+<span class="comment">% ------------------------------------------</span>
+iter = 0; converged = 0; mzeros = sparse(m,1); nzeros = sparse(n,1);
+
+fprintf(<span class="string">'\n  Residuals:   Primal    Dual     Gap      TR_error\n'</span>);
+fprintf(<span class="string">'  ---------------------------------------------------------\n'</span>);
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% interior point loops begin</span>
+<span class="comment">% ------------------------------------------</span>
+<span class="keyword">while</span> iter &lt;= maxiter
+
+    fprintf(<span class="string">'  Iter %4i:  '</span>, iter);
+    fprintf(<span class="string">'%8.2e %8.2e %8.2e %8.2e\n'</span>,rrb,rrc,rdgap,trerror);
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% stop if convergence/divergence detected</span>
+    <span class="comment">% ------------------------------------------</span>
+    <span class="keyword">if</span> (iter &gt; 0) &amp;&amp; (trerror &lt; tol_lp) &amp;&amp; (trerror&gt;=0)
+        stop = 1; converged = 1;
+        <span class="keyword">if</span> stop
+            fprintf(<span class="string">'\n Successfully converged.\n'</span>)
+            <span class="keyword">break</span>
+        <span class="keyword">end</span>
+    <span class="keyword">elseif</span> iter &gt; 0 &amp;&amp; trerror &lt; 0
+        stop = 1; converged = 0;
+        <span class="keyword">if</span> stop
+            fprintf(<span class="string">'\n Fail to converge: negative iterate ncountered.\n'</span>)
+            <span class="keyword">break</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% calculate the coefficient matrix for</span>
+    <span class="comment">% normal equations</span>
+    <span class="comment">% ------------------------------------------</span>
+    xn1 = reciprocal(x);
+    <span class="keyword">if</span> (Ubounds_exist)
+        sn1 = reciprocal(s);
+        vmid = reciprocal(z.*xn1 + w.*sn1);
+    <span class="keyword">else</span>
+        sn1 = [];
+        vmid = reciprocal(z.*xn1);
+    <span class="keyword">end</span>
+    cap = 1.e+11;
+    vmid = full(min(cap,vmid));
+    vmid_sqr = sqrt(vmid);
+    G = 1./vmid_sqr;
+    M = A*sparse(1:n,1:n,vmid_sqr,n,n,n);
+
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% predictor stage</span>
+    <span class="comment">% ------------------------------------------</span>
+    [dx,dz,ds,dw,solmid1(:,iter+1), Gdt, resmid1(iter+1), itmid1(iter+1), rhs1(:,iter+1)] = <span class="keyword">...</span>
+        direct(A, M, Rb, Rc, Ru, Rxz, Rsw, vmid, G, xn1,sn1,z,w,0, tolmid, solvername);
+    [ap,ad] = ratiotest(dx,dz,ds,dw);
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% corrector stage</span>
+    <span class="comment">% ------------------------------------------</span>
+    <span class="keyword">if</span> (tau0*ap &lt; 1 || tau0*ad &lt; 1) <span class="comment">% if we do need to take a corrector step</span>
+        mu = centering(dx,dz,ds,dw,ap,ad,dgap,trerror);
+        Rxz = dx.*dz; Rsw = ds.*dw;
+        [dx2,dz2,ds2,dw2,solmid2(:,iter+1), Gdt2, resmid2(iter+1), itmid2(iter+1), rhs2(:,iter+1)] = <span class="keyword">...</span>
+            direct(A,M,mzeros,nzeros,nzeros, Rxz,Rsw,vmid,G, xn1,sn1,z,w,mu,tolmid,solvername);
+        dx = dx + dx2;
+        dz = dz + dz2;
+        ds = ds + ds2;
+        dw = dw + dw2;
+        Gdt = Gdt+Gdt2; <span class="comment">% Gdt := A'dy (saving 1 matrix-vector production)</span>
+        [ap,ad] = ratiotest(dx,dz,ds,dw);
+    <span class="keyword">else</span> <span class="comment">% if the corrector step is not taken, we still need to put in some value for the record</span>
+        resmid2(iter+1) = 0;
+        solmid2(:,iter+1) = zeros(n,1);
+        itmid2(iter+1) = 0;
+    <span class="keyword">end</span>
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% update iterate</span>
+    <span class="comment">% ------------------------------------------</span>
+    [Rxz,Rsw,dgap,phi] = update(ap,ad,dx,dz,ds,dw, Gdt, trerror);  <span class="comment">% phi: centrality measure</span>
+    iter = iter + 1;
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% measure feasibility</span>
+    <span class="comment">% ------------------------------------------</span>
+    [Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A,b,c,dgap);
+    trerror = max([rrb rrc rru rdgap]);
+
+    <span class="comment">% ------------------------------------------</span>
+    <span class="comment">% adjust tolmid (optional)</span>
+    <span class="comment">% ------------------------------------------</span>
+    <span class="keyword">if</span> strcmp(toladj,<span class="string">'ON'</span>)
+        <span class="keyword">if</span> (resmid1(iter) &gt; tolmid || resmid2(iter) &gt; tolmid) &amp;&amp; (tolmid &lt; 1e-6)
+            tolmid = 1.5*tolmid; <span class="comment">% fail to converge</span>
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> log10(trerror)&lt;= 1
+            tolmid = max(1e-14,0.75*tolmid);
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> log10(trerror)&lt;= -3
+            tolmid = max(1e-14, 0.5*tolmid);
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    cn(iter) = cond(M*M');
+    trerrorHist(iter) = trerror;
+
+<span class="keyword">end</span>
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% interior point loops end</span>
+<span class="comment">% ------------------------------------------</span>
+
+<span class="comment">% =============='''' tick ends''''==============</span>
+t1 = cputime - t1;
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% organise output</span>
+<span class="comment">% ------------------------------------------</span>
+avg1 = round(sum(itmid1)/iter); avg2 = round(sum(itmid2)/iter);
+info = [ converged; iter; avg1; avg2];
+
+<span class="keyword">if</span> (Lbounds_non0)
+    x = x + lb; <span class="comment">% put the lower bound back in</span>
+<span class="keyword">end</span>
+
+objp = full(c'*x);
+info = [info; objp; t1];
+fprintf(<span class="string">'\n %s find the opt value: %8.2e \n'</span>, solvername, objp);
+fprintf(<span class="string">'\n  Iter  CPUtime  tolmid_start  tolmid_end   tolmidAdj \n'</span>);
+fprintf(<span class="string">'\n  %4i   %.2f     %8.2e         %8.2e          \n'</span>,<span class="keyword">...</span>
+             iter, t1,      tolmid_start, tolmid);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+&lt;&lt;&lt;&lt;&lt; NIILP solver: ABGMRES_scale for problem lp_adlittle &gt;&gt;&gt;&gt;&gt;
+</pre><h2 id="2">load and preprocess problem</h2><pre class="codeinput"><span class="keyword">function</span> [A, b, c, lb, ub] = prep(probname)
+<span class="comment">% This function loads data and preprocess the problem.</span>
+
+<span class="comment">% Args:</span>
+    <span class="comment">% probname (string): the filename of the problem, e.g. 'lp_agg.mat'</span>
+
+<span class="comment">% Returns:</span>
+    <span class="comment">% the matrices and arrays of the problem</span>
+
+<span class="keyword">global</span> Lbounds_non0
+<span class="keyword">global</span> Ubounds_exist nub m n
+<span class="keyword">global</span> fixed_value_idx fixed_value
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% load problem</span>
+<span class="comment">% ------------------------------------------</span>
+problem_loaded = load(probname);
+A = problem_loaded.Problem.A;
+b = problem_loaded.Problem.b;
+c = problem_loaded.Problem.aux.c;
+lb = problem_loaded.Problem.aux.lo;
+ub = problem_loaded.Problem.aux.hi;
+
+<span class="keyword">if</span> any(lb &gt; ub)
+    fprintf(<span class="string">'\n Error in NIILP.prep(): problem %s has lower bound exceeding upper bound\n'</span>, probname); <span class="keyword">return</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% delete zero rows in A</span>
+<span class="comment">% ------------------------------------------</span>
+indices = sum(A~=0, 2)&gt;0;
+b = b(indices);
+A = A(indices, :);
+
+fixed_value_idx = find(lb==ub &amp; lb == 0);
+fixed_value = ub(fixed_value_idx);
+
+[m,n] = size(A);
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% shift nonzero lower bounds</span>
+<span class="comment">% ------------------------------------------</span>
+Lbounds_non0 = any(lb ~= 0);
+<span class="keyword">if</span> (Lbounds_non0)
+    lb(isinf(lb))= -1e-11;
+    b = b - A*lb; <span class="comment">% when lb has -inf, need to adjust b to be a big number</span>
+<span class="keyword">end</span>
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% find noninf upper bounds</span>
+<span class="comment">% ------------------------------------------</span>
+nub = 0;
+position = isfinite(ub); <span class="comment">% mark the finite bounds with 1</span>
+Ubounds_exist = any(position);
+
+ub(~isfinite(ub))=0;
+ub = position.*ub;
+<span class="keyword">if</span> (Ubounds_exist)
+    nub = nnz(ub);
+    ub = sparse(position.*(ub-lb));
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="3">choose an initial guess</h2><pre class="codeinput"><span class="keyword">function</span> [x, y, z, s, w, Gt] = initp(A, b, c, ub, bnrm, cnrm)
+<span class="comment">% This function sets up a initial guess for the interior-point process</span>
+<span class="comment">% following the LIPSOL and the Lustig 1992 paper.</span>
+
+<span class="keyword">global</span> Ubounds_exist e
+<span class="keyword">global</span> fixed_value_idx fixed_value
+
+
+[m,n] = size(A); y = zeros(m,1);
+pmin = max(bnrm/100, 100);
+dmin = cnrm*.425; dmin = max(dmin, pmin/40);
+pmin = min(pmin, 1.e+4); dmin = min(dmin, 1.e+3);
+P = A*sparse(1:n,1:n,e,n,n,n)*A';
+rho = min(100,bnrm);
+
+solspd = P\(full(b-rho*A*e));
+
+x = A'*solspd + rho*e;
+pmin = max(pmin, -min(x));
+x = max(pmin,x);
+
+x(fixed_value_idx) = fixed_value;
+
+
+z = full((c+dmin).*(c &gt; 0) + dmin*(-dmin &lt; c &amp; c &lt;= 0) - c.*(c &lt;= -dmin));
+s = []; w = [];
+
+<span class="keyword">if</span> (Ubounds_exist)
+    s = spones(ub).*max(pmin, ub-x);
+    w = spones(ub).*( dmin*(c &gt; 0) + <span class="keyword">...</span>
+        (dmin - c).*(-dmin &lt; c &amp; c &lt;= 0) - 2*c.*(c &lt;= -dmin) );
+<span class="keyword">end</span>
+Gt = A'*y;
+
+<span class="keyword">end</span>
+</pre><h2 id="4">calculate feasibility</h2><pre class="codeinput"><span class="keyword">function</span> [Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A, b, c, dgap)
+<span class="comment">% This function returns the (relative) feasibility measure and duality measure.</span>
+
+<span class="keyword">global</span> x z s w Gt
+<span class="keyword">global</span> ub bnrm cnrm unrm nt
+<span class="keyword">global</span> Ubounds_exist
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% compute vectors</span>
+<span class="comment">% ------------------------------------------</span>
+Rb = A*x - b;
+Rc = Gt + z - c;
+Ru = [];
+<span class="keyword">if</span> (Ubounds_exist)
+    Rc = Rc - w;
+    Ru = spones(s).*x + s - ub;
+<span class="keyword">end</span>
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% compute norms</span>
+<span class="comment">% ------------------------------------------</span>
+rb = norm(Rb); rc = norm(Rc); ru = 0;
+<span class="keyword">if</span> Ubounds_exist
+    ru = norm(Ru);
+<span class="keyword">end</span>
+
+<span class="keyword">if</span> any(isnan([rb rc ru]))
+    error(<span class="string">' NaN occured.'</span>);
+<span class="keyword">end</span>
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% compute relative error</span>
+<span class="comment">% ------------------------------------------</span>
+rrb = rb/max(1,bnrm); rrc = rc/max(1,cnrm); rru = 0;
+<span class="keyword">if</span> (Ubounds_exist)
+    rru = ru/(1+unrm);
+<span class="keyword">end</span>
+rdgap = dgap/nt;
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+  Residuals:   Primal    Dual     Gap      TR_error
+  ---------------------------------------------------------
+  Iter    0:  8.44e+00 1.95e+00 1.35e+05 1.35e+05
+</pre><pre class="codeoutput">  Iter    1:  1.61e+00 4.14e-02 3.84e+04 3.84e+04
+</pre><pre class="codeoutput">  Iter    2:  1.21e-01 5.85e-16 5.52e+03 5.52e+03
+</pre><pre class="codeoutput">  Iter    3:  8.40e-03 1.51e-16 1.23e+03 1.23e+03
+</pre><pre class="codeoutput">  Iter    4:  1.68e-03 1.93e-16 3.76e+02 3.76e+02
+</pre><pre class="codeoutput">  Iter    5:  2.42e-05 1.46e-16 1.00e+02 1.00e+02
+</pre><pre class="codeoutput">  Iter    6:  9.89e-06 2.00e-15 3.49e+01 3.49e+01
+</pre><pre class="codeoutput">  Iter    7:  1.62e-06 5.61e-16 9.87e+00 9.87e+00
+</pre><pre class="codeoutput">  Iter    8:  1.54e-07 2.20e-15 2.72e+00 2.72e+00
+</pre><pre class="codeoutput">  Iter    9:  3.27e-07 2.20e-15 1.78e-01 1.78e-01
+</pre><pre class="codeoutput">  Iter   10:  1.78e-09 2.20e-15 2.39e-03 2.39e-03
+</pre><pre class="codeoutput">  Iter   11:  1.79e-09 2.20e-15 1.22e-06 1.22e-06
+</pre><pre class="codeoutput">  Iter   12:  2.20e-09 3.29e-15 1.60e-11 2.20e-09
+
+ Successfully converged.
+
+ ABGMRES_scale find the opt value: 2.25e+05 
+
+  Iter  CPUtime  tolmid_start  tolmid_end   tolmidAdj 
+
+    12   0.35     1.00e-06         4.45e-08          
+</pre><h2 id="5">calculate direction to move</h2><pre class="codeinput"><span class="keyword">function</span> [dx, dz, ds, dw, dt, Gdt, resmid, itmid, rhs] = <span class="keyword">...</span>
+direct(A, M, Rb, Rc, Ru, Rxz, Rsw, vmid, G, xn1, sn1, z, w, mu, tolmid, solvername)
+<span class="comment">% This function computes the direction by calling a pre-specified linear algebera solver.</span>
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% construct rhs</span>
+<span class="comment">% ------------------------------------------</span>
+<span class="keyword">global</span> Ubounds_exist n m
+maxitmid = m;
+
+<span class="keyword">if</span> (mu ~= 0)
+    Rxz = Rxz - mu;
+<span class="keyword">end</span>
+
+Rc = Rc - Rxz.*xn1;
+
+<span class="keyword">if</span> (Ubounds_exist)
+    <span class="keyword">if</span> (mu ~= 0)
+        Rsw = Rsw - mu;
+    <span class="keyword">end</span>
+    Rc = Rc + (Rsw - Ru.*w).*sn1;
+<span class="keyword">end</span>
+
+rhs = -(Rb + A*(vmid.*Rc));
+
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% select a solver</span>
+<span class="comment">% ------------------------------------------</span>
+<span class="keyword">if</span> strcmp(solvername,<span class="string">'ABGMRES_scale'</span>)
+    [dt, reshis, itmid] = ABNESOR4IP_scale(M', rhs, tolmid);
+    resmid = reshis(itmid);
+    Gdt = G.* dt;
+<span class="keyword">elseif</span> strcmp(solvername,<span class="string">'CGNE_scale'</span>)
+    [dt, reshis, itmid] = CGNE4IP_scale(M', rhs, tolmid, maxitmid);
+    resmid = reshis(itmid);
+    Gdt = G.* dt;
+<span class="keyword">elseif</span> strcmp(solvername,<span class="string">'MRNE_scale'</span>)
+    [dt, reshis, itmid] = MRNE4IP_scale(M', rhs, tolmid, maxit);
+    resmid = reshis(itmid);
+    Gdt = G.* dt;
+<span class="keyword">elseif</span> strcmp(solvername,<span class="string">'modDirect'</span>)
+    [dy,resmid] = moDirect(M, rhs);
+    itmid = 0; dt = zeros(n,1);
+    Gdt = A'*dy;
+<span class="keyword">else</span>
+    fprintf(<span class="string">'Please check your input: undefined solver'</span>)
+<span class="keyword">end</span>
+
+
+dx = vmid.*(Gdt + Rc);
+dz = -(z.*dx + Rxz).*xn1;
+ds = []; dw = [];
+
+<span class="keyword">if</span> (Ubounds_exist)
+    ds = -(dx.*spones(w) + Ru);
+    dw = -(w.*ds + Rsw).*sn1;
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="6">choose centering parameter</h2><pre class="codeinput"><span class="keyword">function</span> mu = centering(dx,dz,ds,dw,ap,ad,dgap,trerror)
+<span class="comment">% This function calculates a centering parameter.</span>
+
+<span class="keyword">global</span> x z s w
+<span class="keyword">global</span> Ubounds_exist nt
+
+newdgap = (x + min(1,ap)*dx)'*(z + min(1,ad)*dz);
+<span class="keyword">if</span> (Ubounds_exist)
+    newdgap = newdgap + (s + min(1,ap)*ds)'*(w + min(1,ad)*dw);
+<span class="keyword">end</span>
+sigmak = (newdgap/dgap)^2;
+sigmin = 0; sigmax = .208;
+
+p = ceil(log10(trerror));
+<span class="keyword">if</span> (p &lt; -2 &amp;&amp; dgap &lt; 1.e+3) sigmax = 10^(p+1); <span class="keyword">end</span>
+
+sigmak = max(sigmin, min(sigmax, sigmak));
+
+mu = sigmak*dgap/nt;
+
+<span class="keyword">end</span>
+</pre><h2 id="7">choose a step length</h2><pre class="codeinput"><span class="keyword">function</span> [ap,ad] = ratiotest(dx,dz,ds,dw)
+<span class="comment">% This function finds a step length.</span>
+<span class="keyword">global</span> x z s w
+<span class="keyword">global</span> Ubounds_exist
+
+<span class="comment">% ------------------------------------------</span>
+<span class="comment">% ratio test</span>
+<span class="comment">% ------------------------------------------</span>
+ap = -1/min([dx./x; -0.1]);
+ad = -1/min([dz./z; -0.1]);
+<span class="keyword">if</span> (Ubounds_exist)
+    as = -1/min([ds(find(s))./nonzeros(s); -0.1]);
+    aw = -1/min([dw(find(w))./nonzeros(w); -0.1]);
+    ap = min(ap, as); ad = min(ad, aw);
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="8">update the iterate</h2><pre class="codeinput"><span class="keyword">function</span> [Rxz,Rsw,dgap,phi] = update(ap,ad,dx,dz,ds,dw, Gdt, trerror)
+<span class="comment">% This function update the iterate and</span>
+<span class="comment">% calculate the duality measure and centrality measure.</span>
+
+<span class="keyword">global</span> x z s w Gt n ub
+<span class="keyword">global</span> phi0 tau0 <span class="comment">% phi0 is set at 1e-5; tau0 is set at 0.9995;</span>
+<span class="keyword">global</span> backed nt
+<span class="keyword">global</span> Ubounds_exist
+
+tau = tau0;
+<span class="keyword">if</span> ~exist(<span class="string">'backed'</span>) backed = 0; <span class="keyword">end</span>
+<span class="keyword">if</span> ~backed tau = .9 + 0.1*tau0; <span class="keyword">end</span>
+k = ceil(log10(trerror));
+<span class="keyword">if</span> (k &lt;= -5) tau = max(tau,1-10^k); <span class="keyword">end</span>
+
+ap = min(tau*ap,1); ad = min(tau*ad,1);
+xc = x; <span class="comment">%yc = y;</span>
+Gtc = Gt;
+zc = z;
+sc = s;
+wc = w;
+
+step = [1 .9975 .95 .90 .75 .50];
+<span class="keyword">for</span> k = 1:length(step)
+    x = xc + step(k)*ap*dx;
+    Gt = Gtc + step(k)*ad*Gdt;
+    z = zc + step(k)*ad*dz;
+    s = sc + step(k)*ap*ds;
+    w = wc + step(k)*ad*dw;
+    Rxz = x.*z; Rsw = [];
+    <span class="keyword">if</span> (Ubounds_exist) Rsw = s.*w; <span class="keyword">end</span>
+
+    dgap = full(sum([Rxz; Rsw]));
+
+    swtmp = Rsw(ub~=0);
+    phi = nt*full(min([Rxz; swtmp]))/dgap;
+
+
+    <span class="keyword">if</span> (max(ap,ad) == 1) || (phi &gt;= phi0)
+        <span class="keyword">break</span>;
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+phi0 = min(phi0, phi); <span class="keyword">if</span> (k &gt; 1) backed = 1; <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><h2 id="9">helper function: reciprocal with cap</h2><pre class="codeinput"><span class="keyword">function</span> Y = reciprocal(X)
+<span class="comment">% This is a helper function to ceil the reciprocal.</span>
+
+<span class="keyword">if</span> issparse(X)
+    [m, n]  = size(X);
+    [i,j,Y] = find(X);
+    Y = sparse(i,j,1./Y,m,n);
+<span class="keyword">else</span>
+    Y = 1./X;
+<span class="keyword">end</span>
+
+ceiling = 1.e+16;
+
+Y = min(ceiling,Y);
+
+<span class="keyword">end</span>
+<span class="comment">% --- end of this file ---</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Linear Program Solver by Y. Cui, K. Morikuni, T. Tsuchiya and K. Hayami.
+% First version: Aug 2015
+% Latest update: Nov 2019
+% Please find the full article:
+% Implementation of interior-point methods for LP based on 
+% Krylov subspace iterative solvers with inner-iteration preconditioning
+% Cui, Y., Morikuni, K., Tsuchiya, T. et al. 
+% Comput Optim Appl (2019) 74: 143. 
+% https://doi.org/10.1007/s10589-019-00103-y
+
+%% main function: linear program interior point solver
+function[x, z, info, trerrorHist] = NIILP(probname, solvername, tolmid, toladj, tol_lp, maxiter)
+% The main function to solve linear programs.
+
+% Args:
+    % probname (string): the filename of the problem, e.g. 'lp_agg.mat'
+    % tolmid (double): a tolerance level for the linear solver for the step equations
+    % solvername (string): to specify linear solver, e.g. 'ABGMRES_scale'
+    % toladj (bool): set to True to adjust the tolmid according to the progress
+    % tol_lp (double): a tolerance level for the linear program solver
+    % maxiter (int): max iteration number for the linear program solver
+    
+% Returns:
+    % x (array of doubles): the primal solution
+    % s (array of doubles): the dual solution
+    % info (array): more information of this run, including:
+    %     converged (double): 0 or 1 to indicate whether the linear program solver converged
+    %     iter (double): number of iterations used for convergence
+    %     avg1 (double): average number of iterations for the linear solver to solve the
+    %           predictor step equations
+    %     avg2 (double): average number of iterations for the linear solver to solve the
+    %           corrector step equations
+    % trerrorHist (array of doubles) the error at each interior-point step
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% set up global variables
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+fprintf('\n<<<<< NIILP solver: %s for problem %s >>>>>\n', solvername, strtok(probname,'.'));
+global x s y z w n m ub e Gt
+global nub nt phi0 tau0 bnrm cnrm unrm
+global Lbounds_non0 Ubounds_exist
+global fixed_value_idx fixed_value
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% setup interior-point parameters
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+tolmid_start = tolmid;
+tau0 = .9995;       % step percentage to boundary
+phi0 = 1.e-5;       % initial centrality factor
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% load data & preprocess
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+[A, b, c, lb, ub] = prep(probname);
+nt = n + nub;
+e = ones(n,1);
+
+% =============='''' tick ''''==============
+t1 = cputime;
+
+% initial point REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-
+bnrm =sqrt(b'*b); 
+cnrm = sqrt(c'*c); 
+unrm = [];
+[x,y,z,s,w,Gt] = initp(A,b,c,ub,bnrm,cnrm); % Gt := A'y
+
+if any(fixed_value_idx)
+    fixed_value_idx(:);
+    fixed_value(:);
+end
+
+
+if (Ubounds_exist) unrm = norm(ub); end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% compute the complementary quantities
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+Rxz = x.*z; Rsw = [];
+if (Ubounds_exist) Rsw = s.*w; end
+dgap = full(sum([Rxz; Rsw]));
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% compute the feasibility measurements
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+[Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A,b,c,dgap);
+trerror = max([rrb rrc rru rdgap]);
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% create empty variables to track progress
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+iter = 0; converged = 0; mzeros = sparse(m,1); nzeros = sparse(n,1);
+
+fprintf('\n  Residuals:   Primal    Dual     Gap      TR_error\n');
+fprintf('  REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-\n');
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% interior point loops begin
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+while iter <= maxiter
+    
+    fprintf('  Iter %4i:  ', iter);
+    fprintf('%8.2e %8.2e %8.2e %8.2e\n',rrb,rrc,rdgap,trerror);
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % stop if convergence/divergence detected
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    if (iter > 0) && (trerror < tol_lp) && (trerror>=0)
+        stop = 1; converged = 1; 
+        if stop 
+            fprintf('\n Successfully converged.\n')
+            break
+        end
+    elseif iter > 0 && trerror < 0
+        stop = 1; converged = 0;
+        if stop 
+            fprintf('\n Fail to converge: negative iterate ncountered.\n')
+            break
+        end
+    end
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % calculate the coefficient matrix for 
+    % normal equations
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    xn1 = reciprocal(x);
+    if (Ubounds_exist)
+        sn1 = reciprocal(s);
+        vmid = reciprocal(z.*xn1 + w.*sn1);
+    else
+        sn1 = []; 
+        vmid = reciprocal(z.*xn1);
+    end
+    cap = 1.e+11; 
+    vmid = full(min(cap,vmid));
+    vmid_sqr = sqrt(vmid);
+    G = 1./vmid_sqr;
+    M = A*sparse(1:n,1:n,vmid_sqr,n,n,n);
+    
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % predictor stage
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    [dx,dz,ds,dw,solmid1(:,iter+1), Gdt, resmid1(iter+1), itmid1(iter+1), rhs1(:,iter+1)] = ...
+        direct(A, M, Rb, Rc, Ru, Rxz, Rsw, vmid, G, xn1,sn1,z,w,0, tolmid, solvername);
+    [ap,ad] = ratiotest(dx,dz,ds,dw);
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % corrector stage
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    if (tau0*ap < 1 || tau0*ad < 1) % if we do need to take a corrector step
+        mu = centering(dx,dz,ds,dw,ap,ad,dgap,trerror);
+        Rxz = dx.*dz; Rsw = ds.*dw;
+        [dx2,dz2,ds2,dw2,solmid2(:,iter+1), Gdt2, resmid2(iter+1), itmid2(iter+1), rhs2(:,iter+1)] = ...
+            direct(A,M,mzeros,nzeros,nzeros, Rxz,Rsw,vmid,G, xn1,sn1,z,w,mu,tolmid,solvername);     
+        dx = dx + dx2; 
+        dz = dz + dz2;
+        ds = ds + ds2;
+        dw = dw + dw2;
+        Gdt = Gdt+Gdt2; % Gdt := A'dy (saving 1 matrix-vector production)
+        [ap,ad] = ratiotest(dx,dz,ds,dw);
+    else % if the corrector step is not taken, we still need to put in some value for the record
+        resmid2(iter+1) = 0;
+        solmid2(:,iter+1) = zeros(n,1);
+        itmid2(iter+1) = 0;
+    end
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % update iterate
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    [Rxz,Rsw,dgap,phi] = update(ap,ad,dx,dz,ds,dw, Gdt, trerror);  % phi: centrality measure
+    iter = iter + 1;
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % measure feasibility
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    [Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A,b,c,dgap);
+    trerror = max([rrb rrc rru rdgap]);
+    
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    % adjust tolmid (optional)
+    % REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+    if strcmp(toladj,'ON')
+        if (resmid1(iter) > tolmid || resmid2(iter) > tolmid) && (tolmid < 1e-6)
+            tolmid = 1.5*tolmid; % fail to converge
+        end
+        if log10(trerror)<= 1
+            tolmid = max(1e-14,0.75*tolmid);
+        end
+        if log10(trerror)<= -3
+            tolmid = max(1e-14, 0.5*tolmid);
+        end
+    end
+    
+    cn(iter) = cond(M*M');
+    trerrorHist(iter) = trerror;
+    
+end
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% interior point loops end
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+
+% =============='''' tick ends''''==============
+t1 = cputime - t1;
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% organise output
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+avg1 = round(sum(itmid1)/iter); avg2 = round(sum(itmid2)/iter);
+info = [ converged; iter; avg1; avg2];
+
+if (Lbounds_non0)
+    x = x + lb; % put the lower bound back in
+end
+
+objp = full(c'*x);
+info = [info; objp; t1];
+fprintf('\n %s find the opt value: %8.2e \n', solvername, objp);
+fprintf('\n  Iter  CPUtime  tolmid_start  tolmid_end   tolmidAdj \n');
+fprintf('\n  %4i   %.2f     %8.2e         %8.2e          \n',...
+             iter, t1,      tolmid_start, tolmid);
+
+end
+
+%% load and preprocess problem
+function [A, b, c, lb, ub] = prep(probname)
+% This function loads data and preprocess the problem.
+
+% Args:
+    % probname (string): the filename of the problem, e.g. 'lp_agg.mat'
+    
+% Returns:
+    % the matrices and arrays of the problem
+
+global Lbounds_non0
+global Ubounds_exist nub m n
+global fixed_value_idx fixed_value
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% load problem
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+problem_loaded = load(probname);
+A = problem_loaded.Problem.A; 
+b = problem_loaded.Problem.b; 
+c = problem_loaded.Problem.aux.c; 
+lb = problem_loaded.Problem.aux.lo; 
+ub = problem_loaded.Problem.aux.hi;
+
+if any(lb > ub)
+    fprintf('\n Error in NIILP.prep(): problem %s has lower bound exceeding upper bound\n', probname); return
+end
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% delete zero rows in A
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+indices = sum(A~=0, 2)>0; 
+b = b(indices);
+A = A(indices, :);
+
+fixed_value_idx = find(lb==ub & lb == 0);
+fixed_value = ub(fixed_value_idx);
+
+[m,n] = size(A);
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% shift nonzero lower bounds
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+Lbounds_non0 = any(lb ~= 0);
+if (Lbounds_non0)
+    lb(isinf(lb))= -1e-11;
+    b = b - A*lb; % when lb has -inf, need to adjust b to be a big number
+end
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% find noninf upper bounds
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+nub = 0;
+position = isfinite(ub); % mark the finite bounds with 1
+Ubounds_exist = any(position);
+
+ub(~isfinite(ub))=0; 
+ub = position.*ub; 
+if (Ubounds_exist)
+    nub = nnz(ub);
+    ub = sparse(position.*(ub-lb));
+end
+
+end
+
+%% choose an initial guess
+function [x, y, z, s, w, Gt] = initp(A, b, c, ub, bnrm, cnrm)
+% This function sets up a initial guess for the interior-point process
+% following the LIPSOL and the Lustig 1992 paper.
+
+global Ubounds_exist e
+global fixed_value_idx fixed_value
+
+
+[m,n] = size(A); y = zeros(m,1);
+pmin = max(bnrm/100, 100);
+dmin = cnrm*.425; dmin = max(dmin, pmin/40);
+pmin = min(pmin, 1.e+4); dmin = min(dmin, 1.e+3);
+P = A*sparse(1:n,1:n,e,n,n,n)*A';
+rho = min(100,bnrm);
+
+solspd = P\(full(b-rho*A*e)); 
+
+x = A'*solspd + rho*e;
+pmin = max(pmin, -min(x)); 
+x = max(pmin,x);
+
+x(fixed_value_idx) = fixed_value;
+
+
+z = full((c+dmin).*(c > 0) + dmin*(-dmin < c & c <= 0) - c.*(c <= -dmin));
+s = []; w = [];
+
+if (Ubounds_exist)
+    s = spones(ub).*max(pmin, ub-x);
+    w = spones(ub).*( dmin*(c > 0) + ...
+        (dmin - c).*(-dmin < c & c <= 0) - 2*c.*(c <= -dmin) );
+end
+Gt = A'*y;
+
+end
+
+%% calculate feasibility
+function [Rb, Rc, Ru, rb, rc, ru, rrb, rrc, rru, rdgap] = feas(A, b, c, dgap)
+% This function returns the (relative) feasibility measure and duality measure.
+
+global x z s w Gt
+global ub bnrm cnrm unrm nt
+global Ubounds_exist
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% compute vectors
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+Rb = A*x - b;
+Rc = Gt + z - c;
+Ru = [];
+if (Ubounds_exist)
+    Rc = Rc - w;
+    Ru = spones(s).*x + s - ub;
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% compute norms
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+rb = norm(Rb); rc = norm(Rc); ru = 0;
+if Ubounds_exist 
+    ru = norm(Ru); 
+end
+
+if any(isnan([rb rc ru])) 
+    error(' NaN occured.'); 
+end
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% compute relative error
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+rrb = rb/max(1,bnrm); rrc = rc/max(1,cnrm); rru = 0;
+if (Ubounds_exist) 
+    rru = ru/(1+unrm);  
+end
+rdgap = dgap/nt;
+
+end
+
+%% calculate direction to move
+function [dx, dz, ds, dw, dt, Gdt, resmid, itmid, rhs] = ...
+direct(A, M, Rb, Rc, Ru, Rxz, Rsw, vmid, G, xn1, sn1, z, w, mu, tolmid, solvername)
+% This function computes the direction by calling a pre-specified linear algebera solver. 
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% construct rhs
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+global Ubounds_exist n m
+maxitmid = m;
+
+if (mu ~= 0) 
+    Rxz = Rxz - mu; 
+end
+
+Rc = Rc - Rxz.*xn1;
+
+if (Ubounds_exist)
+    if (mu ~= 0) 
+        Rsw = Rsw - mu; 
+    end
+    Rc = Rc + (Rsw - Ru.*w).*sn1;
+end
+
+rhs = -(Rb + A*(vmid.*Rc));
+
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% select a solver
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+if strcmp(solvername,'ABGMRES_scale')
+    [dt, reshis, itmid] = ABNESOR4IP_scale(M', rhs, tolmid);
+    resmid = reshis(itmid);
+    Gdt = G.* dt;        
+elseif strcmp(solvername,'CGNE_scale')
+    [dt, reshis, itmid] = CGNE4IP_scale(M', rhs, tolmid, maxitmid);
+    resmid = reshis(itmid);
+    Gdt = G.* dt;  
+elseif strcmp(solvername,'MRNE_scale')
+    [dt, reshis, itmid] = MRNE4IP_scale(M', rhs, tolmid, maxit);
+    resmid = reshis(itmid);
+    Gdt = G.* dt; 
+elseif strcmp(solvername,'modDirect')
+    [dy,resmid] = moDirect(M, rhs);
+    itmid = 0; dt = zeros(n,1);
+    Gdt = A'*dy;
+else
+    fprintf('Please check your input: undefined solver')
+end
+
+
+dx = vmid.*(Gdt + Rc);
+dz = -(z.*dx + Rxz).*xn1;
+ds = []; dw = [];
+
+if (Ubounds_exist)
+    ds = -(dx.*spones(w) + Ru);
+    dw = -(w.*ds + Rsw).*sn1;
+end
+
+end
+
+%% choose centering parameter
+function mu = centering(dx,dz,ds,dw,ap,ad,dgap,trerror)
+% This function calculates a centering parameter.
+
+global x z s w
+global Ubounds_exist nt
+
+newdgap = (x + min(1,ap)*dx)'*(z + min(1,ad)*dz);
+if (Ubounds_exist)
+    newdgap = newdgap + (s + min(1,ap)*ds)'*(w + min(1,ad)*dw);
+end
+sigmak = (newdgap/dgap)^2;
+sigmin = 0; sigmax = .208;
+
+p = ceil(log10(trerror));
+if (p < -2 && dgap < 1.e+3) sigmax = 10^(p+1); end
+
+sigmak = max(sigmin, min(sigmax, sigmak));
+
+mu = sigmak*dgap/nt;
+
+end
+
+%% choose a step length
+function [ap,ad] = ratiotest(dx,dz,ds,dw)
+% This function finds a step length.
+global x z s w
+global Ubounds_exist
+
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+% ratio test
+% REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH
+ap = -1/min([dx./x; -0.1]);
+ad = -1/min([dz./z; -0.1]);
+if (Ubounds_exist)
+    as = -1/min([ds(find(s))./nonzeros(s); -0.1]);
+    aw = -1/min([dw(find(w))./nonzeros(w); -0.1]);
+    ap = min(ap, as); ad = min(ad, aw);
+end
+
+end
+
+%% update the iterate
+function [Rxz,Rsw,dgap,phi] = update(ap,ad,dx,dz,ds,dw, Gdt, trerror)
+% This function update the iterate and 
+% calculate the duality measure and centrality measure.
+
+global x z s w Gt n ub
+global phi0 tau0 % phi0 is set at 1e-5; tau0 is set at 0.9995;
+global backed nt
+global Ubounds_exist
+
+tau = tau0;
+if ~exist('backed') backed = 0; end
+if ~backed tau = .9 + 0.1*tau0; end
+k = ceil(log10(trerror));
+if (k <= -5) tau = max(tau,1-10^k); end
+
+ap = min(tau*ap,1); ad = min(tau*ad,1);
+xc = x; %yc = y;
+Gtc = Gt;
+zc = z;
+sc = s;
+wc = w;
+
+step = [1 .9975 .95 .90 .75 .50];
+for k = 1:length(step)
+    x = xc + step(k)*ap*dx;
+    Gt = Gtc + step(k)*ad*Gdt;
+    z = zc + step(k)*ad*dz;
+    s = sc + step(k)*ap*ds;
+    w = wc + step(k)*ad*dw;
+    Rxz = x.*z; Rsw = [];
+    if (Ubounds_exist) Rsw = s.*w; end
+    
+    dgap = full(sum([Rxz; Rsw]));
+    
+    swtmp = Rsw(ub~=0);
+    phi = nt*full(min([Rxz; swtmp]))/dgap;
+
+    
+    if (max(ap,ad) == 1) || (phi >= phi0)  
+        break; 
+    end
+
+end
+
+phi0 = min(phi0, phi); if (k > 1) backed = 1; end
+
+end
+
+%% helper function: reciprocal with cap
+function Y = reciprocal(X)
+% This is a helper function to ceil the reciprocal.
+
+if issparse(X)
+    [m, n]  = size(X);
+    [i,j,Y] = find(X);
+    Y = sparse(i,j,1./Y,m,n);
+else
+    Y = 1./X;
+end
+
+ceiling = 1.e+16; 
+
+Y = min(ceiling,Y);
+
+end
+% REPLACE_WITH_DASH_DASH- end of this file REPLACE_WITH_DASH_DASH-
+
+##### SOURCE END #####
+--></body></html>
