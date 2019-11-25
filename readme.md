@@ -1,4 +1,4 @@
-# Linear Program Solver 
+# NIILP: Linear Program Solver 
 ### by Y. Cui, K. Morikuni, T. Tsuchiya and K. Hayami.
 First version: Aug 2015 \
 Latest update: Nov 2019 
