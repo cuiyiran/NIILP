@@ -20,10 +20,12 @@ The repository contains:
 	* `main.m`: the entry point of solving the interior-point problem
 	* `NIILP.m`: the functions of the linear program solver
 * _linear_solvers_
-	* `ABNESOR4IP_scale.mexmaci64`: the MEX file of AB-GMRES solver preconditioned by NE-SOR inner iterations with row scaling.
-	* `CGNE4IP_scale.mexmaci64`: the MEX file of CGNE solver preconditioned by NE-SSOR inner iterations with row scaling.
-	* `MRNE4IP_scale.mexmaci64`: the MEX file of MRNE solver preconditioned by NE-SSOR inner iterations with row scaling.\
-	These MEX files are compiled on macOS with MATLAB R2018b. The original C code and full article for AB-GMRES solver with NE-SOR and BA-GMRES solver with NR-SOR can be found in Dr. Keiichi Morikuni's homepage: <https://researchmap.jp/KeiichiMorikuni/Implementations/>. Please cite the relevant paper if you use these linear solvers for publication.
+	* `ABNESOR4IP_scale.c`: the AB-GMRES solver preconditioned by NE-SOR inner iterations with row scaling.
+	* `CGNE4IP_scale.c`: the CGNE solver preconditioned by NE-SSOR inner iterations with row scaling.
+	* `MRNE4IP_scale.c`: the MRNE solver preconditioned by NE-SSOR inner iterations with row scaling.\
+	To use these C-code inside the interior-point solver `NIILP.m`, please compile them as MEX (MATLAB Executable) files. For more instructions, see <https://uk.mathworks.com/help/matlab/ref/mex.html>.
+
+	The full article and code for AB-GMRES solver with NE-SOR and BA-GMRES solver with NR-SOR can be found in Dr. Keiichi Morikuni's homepage: <https://researchmap.jp/KeiichiMorikuni/Implementations/>. Please cite the relevant paper if you use these linear solvers for publication.
 * _html_
 	* `main.html`: the html file published by `main.m`
 	* `NIILP.html`: the html file published by `NIILP.m`\
