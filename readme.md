@@ -25,7 +25,10 @@ The repository contains:
 	* `MRNE4IP_scale.c`: the MRNE solver preconditioned by NE-SSOR inner iterations with row scaling.\
 	To use these C-code inside the interior-point solver `NIILP.m`, please compile them as MEX (MATLAB Executable) files. For more instructions, see <https://uk.mathworks.com/help/matlab/ref/mex.html>.
 
-	The full article for AB-GMRES solver with NE-SOR and BA-GMRES solver with NR-SOR can be found in Dr. Keiichi Morikuni's homepage: <https://researchmap.jp/KeiichiMorikuni/>. The code is available in Dr. Keiichi Morikuni's github repository <https://github.com/morikuni-keiichi/AB-NESOR_MEX> and <https://github.com/morikuni-keiichi/BA-NRSOR_MEX>, with implementations in other languages as well.
+	The full article for AB-GMRES solver with NE-SOR and BA-GMRES solver with NR-SOR can be found in Dr. Keiichi Morikuni's homepage: <https://researchmap.jp/KeiichiMorikuni/>. 
+	
+	The code is available in Dr. Keiichi Morikuni's github repository <https://github.com/morikuni-keiichi/AB-NESOR_MEX> and <https://github.com/morikuni-keiichi/BA-NRSOR_MEX>, with implementations in other languages as well.
+	
 	Please cite the relevant paper if you use these linear solvers for publication.
 * _html_
 	* `main.html`: the html file published by `main.m`
